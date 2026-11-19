@@ -9,7 +9,7 @@ from core.utils import is_owner_or_admin
 
 from .models import ApiKey
 from .serializers import ApiKeySerializer
-from .services import create_api_key
+from .services import create_api_key, revoke_api_key
 
 
 class ApiKeyViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
@@ -17,10 +17,10 @@ class ApiKeyViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
     serializer_class = ApiKeySerializer
 
     def get_queryset(self):
-        if self.action == "create":
-            return ApiKey.objects.all()
-        if self.action == "revoke_key":
-            return ApiKey.objects.filter(created_by=self.request.user)
+        # Only keys in orgs the logged-in user belongs to.
+        return ApiKey.objects.filter(
+            project__organisation__memberships__user=self.request.user
+        )
 
     def create(self, request, project_id=None):
         project = get_object_or_404(
@@ -47,3 +47,13 @@ class ApiKeyViewSet(mixins.CreateModelMixin,viewsets.GenericViewSet):
             status=status.HTTP_201_CREATED
         )
 
+    def revoke_key(self, request, project_id=None, key_id=None):
+        """Revoke a key. Only owners and admins of the project's org; safe to call twice."""
+        project = get_object_or_404(
+            Project, pk=project_id, organisation__memberships__user=request.user
+        )
+        if not is_owner_or_admin(request.user, project):
+            raise PermissionDenied("Only owners and admins can revoke API keys.")
+        api_key = get_object_or_404(self.get_queryset(), project=project, id=key_id)
+        revoke_api_key(api_key)
+        return Response(ApiKeySerializer(api_key).data, status=status.HTTP_200_OK)
