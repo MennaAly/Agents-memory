@@ -1,6 +1,7 @@
 from django.conf import settings
 from django.db import models
 
+from .queryset import ApiKeyQuerySet
 
 class ApiKey(models.Model):
     project = models.ForeignKey(
@@ -22,6 +23,7 @@ class ApiKey(models.Model):
     last_used_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     revoked_at = models.DateTimeField(null=True, blank=True)
+    objects = ApiKeyQuerySet.as_manager()
 
     class Meta:
         constraints = [
