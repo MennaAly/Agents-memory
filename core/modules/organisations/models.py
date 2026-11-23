@@ -17,7 +17,7 @@ class Organisation(models.Model):
     def __str__(self):
         return self.name
 
-
+# join table between user and org
 class Member(models.Model):
     class Role(models.TextChoices):
         OWNER = "owner", "Owner"
