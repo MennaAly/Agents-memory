@@ -1,44 +1,65 @@
-# Memory Service
+### Agent Memory
 
-Multi-tenant REST API that stores and searches long-term memories for AI agents.
+A multi-tenant memory service for AI agents. Agents send it conversations, and it stores the facts worth remembering about each user, keeps them correct as they change, and returns the relevant ones when the agent needs them.
 
-## Install
+Status: in progress. See Roadmap for what is built and what is next.
 
-Requires [uv](https://docs.astral.sh/uv/) (`brew install uv`). uv fetches Python 3.12 automatically.
+### Why I'm building it
 
-```sh
-uv sync                 # create .venv and install all deps (incl. dev)
-cp .env.example .env    # then set SECRET_KEY
-docker compose up -d db # start PostgreSQL (or point DATABASE_URL at your own server)
-```
+This is a learning project. I'm building it to understand AI engineering concepts in depth by implementing them in a real backend, not just reading about them. It is modelled on Mem0, an open-source memory layer for AI agents, and rebuilds its core ideas from scratch. It is not affiliated with Mem0.
 
-The database is PostgreSQL. `DATABASE_URL` is required; tests also need the server running.
+### What it does
+Remembers. An agent posts a user's messages. A background worker uses an LLM to extract durable facts (preferences, people, places, plans) and stores them with embeddings.
 
-## Run migrations
+Stays correct. New facts are compared with existing ones. The service decides whether to add, update, delete or ignore each one, and keeps a version history instead of overwriting.
 
-```sh
-uv run python manage.py migrate
-```
+Recalls. Hybrid search (keyword + vector) returns the most relevant memories for a user, ranked by relevance, recency and importance, and trimmed to fit the agent's token budget.
 
-## Run the server
+Forgets. Single memories or a whole end user can be deleted, including their history and embeddings.
+Key design points
 
-```sh
-uv run python manage.py runserver
-```
+Multi-tenant by default. Organisations own projects, and every query is scoped to the caller's project. Another tenant's data returns 404, never 403.
 
-- Health check: http://127.0.0.1:8000/api/health
-- API docs (Swagger UI): http://127.0.0.1:8000/api/docs  
-- OpenAPI schema: http://127.0.0.1:8000/api/schema/
+Secure API keys. Keys are random, stored only as a hash, looked up by prefix, scoped, revocable, and shown once at creation.
+Async ingestion. Writes return 202 Accepted with a job id and are processed by Celery workers, with retries and idempotency keys so a retried request never creates duplicates.
 
-## Run tests
+Safe under concurrency. Transactions, row locks and per-user ordering keep facts consistent when many workers run at once.
+Measured. An eval dataset scores recall, updates, forgetting and extraction quality, and every LLM call is logged with tokens, cost and latency./
 
-```sh
-uv run pytest
-```
+### Tech stack
 
-## Lint & format
+| Area            | Tools                                  |
+| --------------- | -------------------------------------- |
+| API             | Python, Django, Django REST Framework  |
+| Database        | PostgreSQL, pgvector, full-text search |
+| Background jobs | Celery, Redis                          |
+| AI              | LLM structured output, embeddings      |
+| Testing and CI  | pytest, factory_boy, GitHub Actions    |
+| Infrastructure  | Docker Compose; AWS planned            |
 
-```sh
-uv run ruff check .
-uv run ruff format .
-```
+### Roadmap
+[x] Data model: organisations, members, projects, API keys, end users
+
+[x] API key generation, hashing, authentication and scope permissions
+
+[x] Tenant scoping on every query
+
+[ ] Organisations and projects endpoints, cursor pagination, Problem Details errors, OpenAPI docs
+
+[ ] Test suite and CI
+
+[ ] Async ingestion with Celery, idempotency and concurrency control
+
+[ ] LLM fact extraction, provider fallback, cost tracking
+
+[ ] Embeddings and filtered vector search
+
+[ ] Conflict resolution, version history, deduplication, forgetting
+
+[ ] Hybrid search and evals
+
+[ ] AWS deployment, caching, rate limiting
+
+[ ] MCP server and demo agent
+
+[ ] React developer dashboard
