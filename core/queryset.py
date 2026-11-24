@@ -1,5 +1,6 @@
-from django.db import models
 from django.core.exceptions import ImproperlyConfigured
+from django.db import models
+
 
 class TenantQuerySet(models.QuerySet):
     user_path = None
