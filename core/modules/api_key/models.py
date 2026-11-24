@@ -3,6 +3,7 @@ from django.db import models
 
 from .queryset import ApiKeyQuerySet
 
+
 class ApiKey(models.Model):
     project = models.ForeignKey(
         "organisations.Project", on_delete=models.CASCADE, related_name="api_keys"
@@ -19,7 +20,7 @@ class ApiKey(models.Model):
         null=True,
         related_name="created_api_keys",
     )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     last_used_at = models.DateTimeField(null=True, blank=True)
     expires_at = models.DateTimeField(null=True, blank=True)
     revoked_at = models.DateTimeField(null=True, blank=True)

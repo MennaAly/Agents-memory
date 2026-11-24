@@ -9,4 +9,5 @@ urlpatterns = [
     # Each app exposes its own urls.py; include it here.
     path("api/", include("core.urls")),
     path("", include("core.modules.api_key.urls")),
+    path("", include("core.modules.organisations.urls")),
 ]

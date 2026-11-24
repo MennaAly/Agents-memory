@@ -11,6 +11,7 @@ from core.utils import is_owner_or_admin
 
 from .authentication import ApiKeyAuthentication
 from .models import ApiKey
+from .pagination import ApiKeyCursorPagination
 from .permissions import HasApiKey, HasScope
 from .serializers import ApiKeySerializer
 from .services import create_api_key, revoke_api_key
@@ -19,6 +20,7 @@ from .services import create_api_key, revoke_api_key
 class ApiKeyViewSet(UserScopedMixin, mixins.CreateModelMixin, viewsets.GenericViewSet):
     permission_classes = [IsAuthenticated]
     serializer_class = ApiKeySerializer
+    pagination_class = ApiKeyCursorPagination
     queryset = ApiKey.objects.all()  # UserScopedMixin narrows this to the user's orgs
 
     def get_queryset(self):
