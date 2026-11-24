@@ -8,4 +8,5 @@ urlpatterns = [
     path("api/docs", SpectacularSwaggerView.as_view(url_name="schema"), name="docs"),
     # Each app exposes its own urls.py; include it here.
     path("api/", include("core.urls")),
+    path("", include("core.modules.api_key.urls")),
 ]
