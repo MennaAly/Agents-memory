@@ -7,11 +7,14 @@ from rest_framework.viewsets import ModelViewSet
 from core.mixins import UserScopedMixin
 
 from .models import Member, Organisation, Project
+from .pagination import ProjectCursorPagination
 from .permissions import ProjectRolePermission
 from .serializers import OrganisationSerializer, ProjectSerializer
 
 
-class OrganisationViewSet(UserScopedMixin, mixins.CreateModelMixin, mixins.ListModelMixin,viewsets.GenericViewSet):
+class OrganisationViewSet(
+    UserScopedMixin, mixins.CreateModelMixin, mixins.ListModelMixin, viewsets.GenericViewSet
+):
     permission_classes = [IsAuthenticated]
     # we will use UserScopedMixin to isolate tenants when we query inside the endpoints
     queryset = Organisation.objects.all() 
@@ -30,6 +33,7 @@ class ProjectViewSet(UserScopedMixin, ModelViewSet):
     permission_classes = [ProjectRolePermission]
     serializer_class = ProjectSerializer
     queryset = Project.objects.all() 
+    pagination_class = ProjectCursorPagination
 
     def get_queryset(self):
         return super().get_queryset().filter(organisation_id=self.kwargs["org_id"])
