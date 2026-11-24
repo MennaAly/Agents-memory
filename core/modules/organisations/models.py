@@ -50,7 +50,7 @@ class Project(models.Model):
         Organisation, on_delete=models.CASCADE, related_name="projects"
     )
     name = models.CharField(max_length=200)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True,db_index=True)
     slug = models.SlugField(max_length=100)
     objects = ProjectQuerySet.as_manager()
 
