@@ -39,15 +39,27 @@ Measured. An eval dataset scores recall, updates, forgetting and extraction qual
 
 ### Roadmap
 [x] Data model: organisations, members, projects, API keys, end users
+
 [x] API key generation, hashing, authentication and scope permissions
+
 [x] Tenant scoping on every query
+
 [ ] Organisations and projects endpoints, cursor pagination, Problem Details errors, OpenAPI docs
+
 [ ] Test suite and CI
+
 [ ] Async ingestion with Celery, idempotency and concurrency control
+
 [ ] LLM fact extraction, provider fallback, cost tracking
+
 [ ] Embeddings and filtered vector search
+
 [ ] Conflict resolution, version history, deduplication, forgetting
+
 [ ] Hybrid search and evals
+
 [ ] AWS deployment, caching, rate limiting
+
 [ ] MCP server and demo agent
+
 [ ] React developer dashboard
