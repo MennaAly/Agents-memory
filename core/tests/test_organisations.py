@@ -29,7 +29,7 @@ def test_create_organisation_without_name_returns_400(auth_client):
     response = auth_client.post(URL, {}, format="json")
 
     assert response.status_code == 400
-    assert "name" in response.data  # the error is attached to the `name` field
+    assert "name" in response.data["errors"]  # the error is attached to the `name` field
     assert Organisation.objects.count() == 0  # nothing was saved
 
 

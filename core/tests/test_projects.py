@@ -63,7 +63,7 @@ def test_duplicate_project(owner_client, owner):
     response = owner_client.post(projects_url(org), {"name": "project1"}, format="json")
 
     assert response.status_code == 400
-    assert "name" in response.data
+    assert "name" in response.data["errors"]
     assert Project.objects.filter(organisation=org).count() == 1
 
 
@@ -81,7 +81,7 @@ def test_missing_name_in_project_req(owner_client, owner):
     response = owner_client.post(projects_url(owner.organisation), {}, format="json")
 
     assert response.status_code == 400
-    assert "name" in response.data
+    assert "name" in response.data["errors"]
     assert Project.objects.count() == 0
 
 
@@ -91,7 +91,7 @@ def test_name_too_long(owner_client, owner):
     )
 
     assert response.status_code == 400
-    assert "name" in response.data
+    assert "name" in response.data["errors"]
 
 
 def test_create_project_with_member_role(member_client, owner):
