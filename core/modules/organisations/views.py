@@ -1,9 +1,10 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from django.shortcuts import get_object_or_404
 from rest_framework import mixins, viewsets
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
+from core.exceptions import Conflict
 from core.mixins import UserScopedMixin
 
 from .models import Member, Organisation, Project
@@ -42,5 +43,18 @@ class ProjectViewSet(UserScopedMixin, ModelViewSet):
         org = get_object_or_404(
             Organisation.objects.for_user(self.request.user), pk=self.kwargs["org_id"]
         )
-        serializer.save(organisation=org)
+        self._save_or_conflict(serializer, organisation=org)
+
+    def perform_update(self, serializer):
+        self._save_or_conflict(serializer)
+
+    def _save_or_conflict(self, serializer, **kwargs):
+        # validate_name catches most duplicates, but two requests at the same moment
+        # can both pass it; then the DB unique constraint fails. Return 409, not 500.
+        # atomic() rolls back only this block, so the request can still respond.
+        try:
+            with transaction.atomic():
+                serializer.save(**kwargs)
+        except IntegrityError:
+            raise Conflict("A project with this name already exists.") from None
     
